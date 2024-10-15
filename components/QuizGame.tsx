@@ -1,77 +1,83 @@
-'use client';
-import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
-import { Button } from "./ui/button"
-import { ChevronDown, Clock, Share2 } from 'lucide-react'
-import Image from 'next/image'
-console.log(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+"use client";
+import { useState, useEffect, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { ChevronDown, Clock, Share2 } from "lucide-react";
+import Image from "next/image";
+console.log(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 // Initialize Supabase client
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-type Feedback = ('correct' | 'wrong-position' | 'incorrect')[]
+type Feedback = ("correct" | "wrong-position" | "incorrect")[];
 
 interface QuizQuestion {
-  id: number
-  question: string
-  answer: string
-  explanation: string
-  image_url?: string
+  id: number;
+  question: string;
+  answer: string;
+  explanation: string;
+  image_url?: string;
 }
 
 export default function QuizGame() {
-  const [question, setQuestion] = useState<QuizQuestion | null>(null)
-  const [answer, setAnswer] = useState('')
-  const [attempts, setAttempts] = useState<string[]>([])
-  const [feedback, setFeedback] = useState<Feedback[]>([])
-  const [timeElapsed, setTimeElapsed] = useState(0)
-  const [gameState, setGameState] = useState<'playing' | 'finished'>('playing')
+  const [question, setQuestion] = useState<QuizQuestion | null>(null);
+  const [answer, setAnswer] = useState("");
+  const [attempts, setAttempts] = useState<string[]>([]);
+  const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [gameState, setGameState] = useState<"playing" | "finished">("playing");
   const [stats, setStats] = useState({
     played: 0,
     winPercentage: 0,
     currentStreak: 0,
-    maxStreak: 0
-  })
-  const [showExplanation, setShowExplanation] = useState(false)
-  const [isQuestionExpanded, setIsQuestionExpanded] = useState(true)
+    maxStreak: 0,
+  });
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [isQuestionExpanded, setIsQuestionExpanded] = useState(true);
 
-  const answerInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    fetchQuestion()
-    fetchStats()
-  }, [])
+  const answerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (gameState === 'playing') {
+    fetchQuestion();
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    if (gameState === "playing") {
       const timer = setInterval(() => {
-        setTimeElapsed(prevTime => prevTime + 1)
-      }, 1000)
-      return () => clearInterval(timer)
+        setTimeElapsed((prevTime) => prevTime + 1);
+      }, 1000);
+      return () => clearInterval(timer);
     }
-  }, [gameState])
+  }, [gameState]);
 
   useEffect(() => {
     if (answerInputRef.current) {
-      answerInputRef.current.focus()
+      answerInputRef.current.focus();
     }
-  }, [attempts])
+  }, [attempts]);
 
   const fetchQuestion = async () => {
     const { data, error } = await supabase
-      .from('questions')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("questions")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(1)
-      .single()
+      .single();
 
     if (error) {
-      console.error('Error fetching question:', error)
+      console.error("Error fetching question:", error);
     } else if (data) {
-      setQuestion(data)
-      console.log(data)
+      setQuestion(data);
+      console.log(data);
     }
-  }
+  };
 
   const fetchStats = async () => {
     // Fetch stats from Supabase or local storage
@@ -80,80 +86,95 @@ export default function QuizGame() {
       played: 10,
       winPercentage: 80,
       currentStreak: 3,
-      maxStreak: 5
-    })
-  }
+      maxStreak: 5,
+    });
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAnswer = e.target.value.toUpperCase()
-    setAnswer(newAnswer)
+    const newAnswer = e.target.value.toUpperCase();
+    setAnswer(newAnswer);
 
     if (newAnswer.length === question?.answer.length) {
-      handleSubmit(newAnswer)
+      handleSubmit(newAnswer);
     }
-  }
+  };
 
   const handleSubmit = (submittedAnswer: string) => {
-    if (!question) return
+    if (!question) return;
 
-    const newFeedback: Feedback = Array(submittedAnswer.length).fill('incorrect')
-    let remainingCorrect = question.answer.split('')
+    const newFeedback: Feedback = Array(submittedAnswer.length).fill(
+      "incorrect"
+    );
+    let remainingCorrect = question.answer.split("");
 
     // First pass: mark correct letters
-    submittedAnswer.split('').forEach((letter, index) => {
+    submittedAnswer.split("").forEach((letter, index) => {
       if (letter === question.answer[index]) {
-        newFeedback[index] = 'correct'
-        remainingCorrect[index] = ''
+        newFeedback[index] = "correct";
+        remainingCorrect[index] = "";
       }
-    })
+    });
 
     // Second pass: mark wrong position
-    submittedAnswer.split('').forEach((letter, index) => {
-      if (newFeedback[index] !== 'correct') {
-        const correctIndex = remainingCorrect.indexOf(letter)
+    submittedAnswer.split("").forEach((letter, index) => {
+      if (newFeedback[index] !== "correct") {
+        const correctIndex = remainingCorrect.indexOf(letter);
         if (correctIndex !== -1) {
-          newFeedback[index] = 'wrong-position'
-          remainingCorrect[correctIndex] = ''
+          newFeedback[index] = "wrong-position";
+          remainingCorrect[correctIndex] = "";
         }
       }
-    })
+    });
 
-    setAttempts([...attempts, submittedAnswer])
-    setFeedback([...feedback, newFeedback])
+    setAttempts([...attempts, submittedAnswer]);
+    setFeedback([...feedback, newFeedback]);
 
     if (submittedAnswer === question.answer || attempts.length === 2) {
-      setGameState('finished')
-      setShowExplanation(true)
+      setGameState("finished");
+      setShowExplanation(true);
     }
 
-    setAnswer('')
-  }
+    setAnswer("");
+  };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
 
-  const getFeedbackColor = (type: 'correct' | 'wrong-position' | 'incorrect') => {
+  const getFeedbackColor = (
+    type: "correct" | "wrong-position" | "incorrect"
+  ) => {
     switch (type) {
-      case 'correct': return 'bg-green-500'
-      case 'wrong-position': return 'bg-yellow-500'
-      case 'incorrect': return 'bg-gray-300'
+      case "correct":
+        return "bg-green-500";
+      case "wrong-position":
+        return "bg-yellow-500";
+      case "incorrect":
+        return "bg-gray-300";
     }
-  }
+  };
 
   const getShareableResult = () => {
-    const attemptCount = attempts.length
-    const score = 750 // This should be calculated based on your scoring system
-    const feedbackEmojis = feedback.map(row => 
-      row.map(f => f === 'correct' ? '🟩' : f === 'wrong-position' ? '🟨' : '⬛').join('')
-    ).join('\n')
+    const attemptCount = attempts.length;
+    const score = 750; // This should be calculated based on your scoring system
+    const feedbackEmojis = feedback
+      .map((row) =>
+        row
+          .map((f) =>
+            f === "correct" ? "🟩" : f === "wrong-position" ? "🟨" : "⬛"
+          )
+          .join("")
+      )
+      .join("\n");
 
-    return `QuizX #${question?.id}\n${attemptCount}/3 Score: ${score}\n${feedbackEmojis}`
-  }
+    return `QuizX #${question?.id}\n${attemptCount}/3 Score: ${score}\n${feedbackEmojis}`;
+  };
 
-  if (!question) return <div>Loading...</div>
+  if (!question) return <div>Loading...</div>;
 
   return (
     <Card className="w-full max-w-3xl mx-auto">
@@ -166,7 +187,9 @@ export default function QuizGame() {
             Question of the day
           </div>
           <div className="relative">
-            <p className={`text-sm ${isQuestionExpanded ? '' : 'line-clamp-2'}`}>
+            <p
+              className={`text-sm ${isQuestionExpanded ? "" : "line-clamp-2"}`}
+            >
               {question.question}
             </p>
             {question.question.length > 100 && (
@@ -176,11 +199,15 @@ export default function QuizGame() {
                 className="absolute bottom-0 right-0"
                 onClick={() => setIsQuestionExpanded(!isQuestionExpanded)}
               >
-                <ChevronDown className={`w-4 h-4 transition-transform ${isQuestionExpanded ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    isQuestionExpanded ? "rotate-180" : ""
+                  }`}
+                />
               </Button>
             )}
           </div>
-          {question.image_url && (
+          {question.image_url && question.image_url !== "NULL" && (
             <div className="w-full h-48 relative">
               <Image
                 src={question.image_url}
@@ -196,15 +223,17 @@ export default function QuizGame() {
             className="w-full p-2 border border-gray-300 rounded"
             value={answer}
             onChange={handleInputChange}
-            disabled={gameState !== 'playing'}
+            disabled={gameState !== "playing"}
             placeholder="Type your answer here..."
           />
           {attempts.map((attempt, index) => (
             <div key={index} className="flex space-x-1">
-              {attempt.split('').map((letter, letterIndex) => (
+              {attempt.split("").map((letter, letterIndex) => (
                 <div
                   key={letterIndex}
-                  className={`w-8 h-8 flex items-center justify-center text-white font-bold ${getFeedbackColor(feedback[index][letterIndex])}`}
+                  className={`w-8 h-8 flex items-center justify-center text-white font-bold ${getFeedbackColor(
+                    feedback[index][letterIndex]
+                  )}`}
                 >
                   {letter}
                 </div>
@@ -215,7 +244,7 @@ export default function QuizGame() {
             <div className="bg-purple-100 p-4 rounded-lg">
               <h3 className="font-bold mb-2">Answer Explanation:</h3>
               <p>{question.explanation}</p>
-              {question.image_url && (
+              {question.image_url && question.image_url !== "NULL" && (
                 <div className="w-full h-48 relative mt-2">
                   <Image
                     src={question.image_url}
@@ -229,7 +258,7 @@ export default function QuizGame() {
             </div>
           )}
         </div>
-        {gameState === 'finished' && (
+        {gameState === "finished" && (
           <div className="w-1/3 space-y-4">
             <div className="grid grid-cols-2 gap-2 text-center text-sm">
               <div>
@@ -253,16 +282,14 @@ export default function QuizGame() {
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={() => navigator.clipboard.writeText(getShareableResult())}
+              onClick={() =>
+                navigator.clipboard.writeText(getShareableResult())
+              }
             >
               <Share2 className="w-4 h-4 mr-2" />
               Copy
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" className="w-full">
               Explore previous QOTD
             </Button>
           </div>
@@ -276,5 +303,5 @@ export default function QuizGame() {
         <span className="text-sm text-gray-500">Made with ❤️ o7 labs</span>
       </div>
     </Card>
-  )
+  );
 }
