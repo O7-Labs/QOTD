@@ -10,7 +10,7 @@ import { SupabaseContext } from "@/providers/supabase";
 type Feedback = ("correct" | "wrong-position" | "incorrect")[];
 
 interface QuizQuestion {
-  id: number;
+  id: string;
   question: string;
   answer: string;
   explanation: string;
