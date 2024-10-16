@@ -50,15 +50,9 @@ export default function QuizGame() {
     }
   }, [gameState]);
 
-  useEffect(() => {
-    if (answerInputRef.current) {
-      answerInputRef.current.focus();
-    }
-  }, [attempts]);
-
   const fetchQuestion = async () => {
     const { data, error } = await supabase
-      .from("questions")
+      .from("question")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(1)
@@ -68,13 +62,11 @@ export default function QuizGame() {
       console.error("Error fetching question:", error);
     } else if (data) {
       setQuestion(data);
-      console.log(data);
     }
   };
 
   const fetchStats = async () => {
-    // Fetch stats from Supabase or local storage
-    // This is a placeholder implementation
+    // Placeholder implementation
     setStats({
       played: 10,
       winPercentage: 80,
@@ -82,13 +74,13 @@ export default function QuizGame() {
       maxStreak: 5,
     });
   };
+  const handleCharacterChange = (index: number, value: string) => {
+    const newAnswer = answer.split("");
+    newAnswer[index] = value.toUpperCase();
+    setAnswer(newAnswer.join(""));
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAnswer = e.target.value.toUpperCase();
-    setAnswer(newAnswer);
-
-    if (newAnswer.length === question?.answer.length) {
-      handleSubmit(newAnswer);
+    if (newAnswer.join("").length === question?.answer.length) {
+      handleSubmit(newAnswer.join(""));
     }
   };
 
@@ -100,7 +92,6 @@ export default function QuizGame() {
     );
     let remainingCorrect = question.answer.split("");
 
-    // First pass: mark correct letters
     submittedAnswer.split("").forEach((letter, index) => {
       if (letter === question.answer[index]) {
         newFeedback[index] = "correct";
@@ -108,7 +99,6 @@ export default function QuizGame() {
       }
     });
 
-    // Second pass: mark wrong position
     submittedAnswer.split("").forEach((letter, index) => {
       if (newFeedback[index] !== "correct") {
         const correctIndex = remainingCorrect.indexOf(letter);
@@ -151,9 +141,21 @@ export default function QuizGame() {
     }
   };
 
+  const calculateScore = (feedback: Feedback[], timeElapsed: number) => {
+    let score = 0;
+    feedback.forEach((row) => {
+      row.forEach((f) => {
+        if (f === "correct") score += 100;
+        else if (f === "wrong-position") score -= 50;
+        else if (f === "incorrect") score -= 25;
+      });
+    });
+    score -= timeElapsed;
+    return Math.max(score, 0);
+  };
+
   const getShareableResult = () => {
-    const attemptCount = attempts.length;
-    const score = 750; // This should be calculated based on your scoring system
+    const score = calculateScore(feedback, timeElapsed);
     const feedbackEmojis = feedback
       .map((row) =>
         row
@@ -164,67 +166,69 @@ export default function QuizGame() {
       )
       .join("\n");
 
-    return `QuizX #${question?.id}\n${attemptCount}/3 Score: ${score}\n${feedbackEmojis}`;
+    // Find the attempt where the user got the correct answer
+    const correctAttemptIndex =
+      attempts.findIndex((attempt) => attempt === question?.answer) + 1;
+
+    return `QuizX #${question?.id}\n${
+      correctAttemptIndex > 0 ? `${correctAttemptIndex}/3` : `X/3`
+    } Score: ${score}\n${feedbackEmojis}`;
+  };
+  const [showToast, setShowToast] = useState(false);
+
+  const handleCopy = async () => {
+    const result = getShareableResult(); // Assuming this function returns the string to copy
+    await navigator.clipboard.writeText(result);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000); // Toast disappears after 3 seconds
   };
 
   if (!question) return <div>Loading...</div>;
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center text-2xl font-bold">QUIX</CardTitle>
-      </CardHeader>
-      <CardContent className="flex">
-        <div className="flex-grow space-y-4 pr-4">
-          <div className="bg-blue-100 text-blue-800 text-sm font-medium p-2 rounded">
-            Question of the day
-          </div>
-          <div className="relative">
-            <p
-              className={`text-sm ${isQuestionExpanded ? "" : "line-clamp-2"}`}
+    <>
+      <header className="quix-header">
+        <div className="header-top-border"></div>{" "}
+        {/* This div represents the top border */}
+        <h1 className="quix-title">QUIX</h1>
+      </header>
+      <div className="quix-container">
+        <div className="question-header">Question of the day</div>
+        <div className="question-content">
+          <p className={`${isQuestionExpanded ? "" : "line-clamp-2"}`}>
+            {question.question}
+          </p>
+          {question.question.length > 100 && (
+            <button
+              className="expand-button"
+              onClick={() => setIsQuestionExpanded(!isQuestionExpanded)}
             >
-              {question.question}
-            </p>
-            {question.question.length > 100 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute bottom-0 right-0"
-                onClick={() => setIsQuestionExpanded(!isQuestionExpanded)}
-              >
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${
-                    isQuestionExpanded ? "rotate-180" : ""
-                  }`}
-                />
-              </Button>
-            )}
-          </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  isQuestionExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          )}
           {question.image_url && question.image_url !== "NULL" && (
-            <div className="w-full h-48 relative">
+            <div className="question-image">
               <Image
                 src={question.image_url}
                 alt="Question image"
-                layout="fill"
-                objectFit="cover"
-                className="rounded-lg"
+                width={500} // Set the original width of the image
+                height={300} // Set the original height of the image
+                layout="responsive"
               />
             </div>
           )}
-          <input
-            ref={answerInputRef}
-            className="w-full p-2 border border-gray-300 rounded"
-            value={answer}
-            onChange={handleInputChange}
-            disabled={gameState !== "playing"}
-            placeholder="Type your answer here..."
-          />
+        </div>
+        <div className="attempts-container">
           {attempts.map((attempt, index) => (
-            <div key={index} className="flex space-x-1">
+            <div key={index} className="attempt-row">
               {attempt.split("").map((letter, letterIndex) => (
                 <div
                   key={letterIndex}
-                  className={`w-8 h-8 flex items-center justify-center text-white font-bold ${getFeedbackColor(
+                  className={`attempt-block ${getFeedbackColor(
                     feedback[index][letterIndex]
                   )}`}
                 >
@@ -233,68 +237,88 @@ export default function QuizGame() {
               ))}
             </div>
           ))}
-          {showExplanation && (
-            <div className="bg-purple-100 p-4 rounded-lg">
-              <h3 className="font-bold mb-2">Answer Explanation:</h3>
-              <p>{question.explanation}</p>
-              {question.image_url && question.image_url !== "NULL" && (
-                <div className="w-full h-48 relative mt-2">
-                  <Image
-                    src={question.image_url}
-                    alt="Explanation image"
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
-                  />
-                </div>
-              )}
-            </div>
-          )}
         </div>
-        {gameState === "finished" && (
-          <div className="w-1/3 space-y-4">
-            <div className="grid grid-cols-2 gap-2 text-center text-sm">
-              <div>
-                <div className="font-bold">{stats.played}</div>
-                <div>Played</div>
+        <div className="answer-container">
+          {question.answer
+            .split("")
+            .map((char, index) =>
+              char === " " ? (
+                <div key={index} className="answer-space" />
+              ) : (
+                <input
+                  key={index}
+                  className="answer-input"
+                  maxLength={1}
+                  value={answer[index] || ""}
+                  onChange={(event) =>
+                    handleCharacterChange(index, event.target.value)
+                  }
+                  disabled={gameState !== "playing"}
+                />
+              )
+            )}
+        </div>
+        <button
+          className="submit-button"
+          onClick={() => handleSubmit(answer)}
+          disabled={gameState !== "playing"}
+        >
+          Submit
+        </button>
+
+        {showExplanation && (
+          <div className="explanation">
+            <h3>Answer Explanation:</h3>
+            <p>{question?.explanation}</p>
+            {question?.image_url && question.image_url !== "NULL" && (
+              <div className="explanation-image">
+                <Image
+                  src={question.image_url}
+                  alt="Explanation image"
+                  width={500} // Set the original width of the image
+                  height={300} // Set the original height of the image
+                  layout="responsive"
+                />
               </div>
-              <div>
-                <div className="font-bold">{stats.winPercentage}%</div>
-                <div>Win %</div>
-              </div>
-              <div>
-                <div className="font-bold">{stats.currentStreak}</div>
-                <div>Current Streak</div>
-              </div>
-              <div>
-                <div className="font-bold">{stats.maxStreak}</div>
-                <div>Max Streak</div>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() =>
-                navigator.clipboard.writeText(getShareableResult())
-              }
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Copy
-            </Button>
-            <Button variant="outline" size="sm" className="w-full">
-              Explore previous QOTD
-            </Button>
+            )}
           </div>
         )}
-      </CardContent>
-      <div className="px-6 pb-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Clock className="w-4 h-4" />
-          <span className="text-sm">{formatTime(timeElapsed)}</span>
+        {gameState === "finished" && (
+          <div className="statistics-panel">
+            <h3>Statistics</h3>
+            <div className="stats-grid">
+              <div className="stat">
+                <div className="stat-value">{stats.played}</div>
+                <div className="stat-label">Played</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value">{stats.winPercentage}%</div>
+                <div className="stat-label">Win %</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value">{stats.currentStreak}</div>
+                <div className="stat-label">Current Streak</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value">{stats.maxStreak}</div>
+                <div className="stat-label">Max Streak</div>
+              </div>
+            </div>
+            <button className="copy-button" onClick={handleCopy}>
+              Copy
+            </button>
+            <button className="explore-button">Explore previous QOTD</button>
+          </div>
+        )}
+        {showToast && <div className="toast">Copied to clipboard</div>}
+        <div className="footer">
+          <div className="timer">
+            <Clock className="w-4 h-4" />
+            <span>{formatTime(timeElapsed)}</span>
+          </div>
+          <span className="credits">Made with ❤️ o7 labs</span>
         </div>
-        <span className="text-sm text-gray-500">Made with ❤️ o7 labs</span>
       </div>
-    </Card>
+    </>
   );
 }
