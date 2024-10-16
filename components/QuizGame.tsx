@@ -151,8 +151,7 @@ export default function QuizGame() {
   }
 
   const getShareableResult = () => {
-    const attemptCount = attempts.length
-    const score = calculateScore(feedback, timeElapsed)
+    const score = calculateScore(feedback, timeElapsed);
     const feedbackEmojis = feedback
       .map((row) =>
         row
@@ -161,10 +160,13 @@ export default function QuizGame() {
           )
           .join("")
       )
-      .join("\n")
-
-    return `QuizX #${question?.id}\n${attemptCount}/3 Score: ${score}\n${feedbackEmojis}`
-  }
+      .join("\n");
+  
+    // Find the attempt where the user got the correct answer
+    const correctAttemptIndex = attempts.findIndex(attempt => attempt === question?.answer) + 1;
+  
+    return `QuizX #${question?.id}\n${correctAttemptIndex > 0 ? `${correctAttemptIndex}/3` : `X/3`} Score: ${score}\n${feedbackEmojis}`;
+  };
   const [showToast, setShowToast] = useState(false);
 
   const handleCopy = async () => {
@@ -173,22 +175,24 @@ export default function QuizGame() {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000); // Toast disappears after 3 seconds
   };
-  const fetchQuestionOfTheDay = async () => {
-    const today = new Date().toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
+//   const fetchQuestionOfTheDay = async () => {
+//     const today = new Date().toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
   
-    let { data: questionData, error } = await supabase
-      .from('questions')
-      .select('*')
-      .eq('date', today)
-      .single();
+//     let { data: questionData, error } = await supabase
+//       .from('questions')
+//       .select('*')
+//       .eq('date', today)
+//       .single();
   
-    if (error) {
-      console.error('Error fetching question:', error);
-      return null;
-    }
+//     if (error) {
+//       console.error('Error fetching question:', error);
+//       return null;
+//     }
   
-    return questionData;
-  };
+//     return questionData;
+//   };
+
+
 
   if (!question) return <div>Loading...</div>
 
@@ -269,8 +273,8 @@ export default function QuizGame() {
       {showExplanation && (
         <div className="explanation">
           <h3>Answer Explanation:</h3>
-          <p>{question.explanation}</p>
-          {question.image_url && question.image_url !== "NULL" && (
+          <p>{question?.explanation}</p>
+          {question?.image_url && question.image_url !== "NULL" && (
             <div className="explanation-image">
               <Image
                 src={question.image_url}
