@@ -54,7 +54,7 @@ export default function QuizGame() {
 
   const fetchQuestion = async () => {
     const { data, error } = await supabase
-      .from("questions")
+      .from("question")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(1)
