@@ -285,22 +285,21 @@ body {
   10%, 90% { opacity: 1; }
 }
 
-/* Assuming the container for the question and explanation has a class named 'question-container' */
-.question-container {
-  text-align: center; /* Center align the text */
-  padding: 20px; /* Add some padding around the text */
-}
-
-/* Assuming the image is within a container with a class named 'image-container' */
-.image-container img {
-  width: 100px; /* Adjust the width as needed */
-  height: auto; /* Maintain the aspect ratio */
-  display: block; /* Block display to force a new line */
-  margin: 0 auto; /* Center the image horizontally */
-  padding-top: 10px; /* Space between text and image */
+.question-image {
+  max-width: 100%;  
+  height: auto;    
+  margin: 0 auto;   
+  padding: 10px;    
+  box-sizing: border-box; 
 }
 @media (max-width: 768px) {
-  .image-container img {
-      width: 50px; /* Smaller width on smaller screens */
+  .question-image {
+    padding: 5px;  
+  }
+}
+
+@media (max-width: 480px) {
+  .question-image {
+    padding: 2px;  
   }
 }

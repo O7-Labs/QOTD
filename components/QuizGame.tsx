@@ -226,8 +226,9 @@ export default function QuizGame() {
             <Image
               src={question.image_url}
               alt="Question image"
-              layout="fill"
-              objectFit="cover"
+              width={500}  // Set the original width of the image
+              height={300} // Set the original height of the image
+              layout="responsive"
             />
           </div>
         )}
@@ -279,8 +280,9 @@ export default function QuizGame() {
               <Image
                 src={question.image_url}
                 alt="Explanation image"
-                layout="fill"
-                objectFit="cover"
+                width={500}  // Set the original width of the image
+                height={300} // Set the original height of the image
+                layout="responsive"
               />
             </div>
           )}
