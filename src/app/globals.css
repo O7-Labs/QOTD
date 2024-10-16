@@ -12,11 +12,27 @@
   --header-bg: #90cdf4;
   --button-bg: #48bb78;
 }
-header {
-  background-color: #f8f9fa; /* Light grey background, adjust color as needed */
-  padding: 10px 0; /* Padding for the header */
-  text-align: center; /* Center the title text */
-  border-bottom: 1px solid #ccc; /* Optional: adds a subtle border line */
+
+
+.quix-header {
+  background-color: #ffffff; /* Light grey background */
+   /* Padding around the header */
+  text-align: center; 
+}
+
+.quix-container {
+  margin: 20px auto; /* Center the container and give some margin from the header */
+  padding: 20px;
+  background-color: #fff; /* White background for the quiz area */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Shadow for the container */
+  width: 80%; /* Adjust width as necessary */
+  max-width: 800px; /* Maximum width */
+}
+
+.footer {
+  background-color: #f8f9fa; /* Consistent with the header */
+  padding: 10px 20px; /* Padding */
+  text-align: center; /* Center content */
 }
 
 body {
@@ -301,5 +317,15 @@ body {
 @media (max-width: 480px) {
   .question-image {
     padding: 2px;  
+  }
+}
+@media (max-width: 768px) {
+  .quix-container {
+    width: 95%; /* More width on smaller screens */
+    margin: 10px auto; /* Less margin */
+  }
+
+  .quix-header, .footer {
+    padding: 5px 10px; /* Less padding on smaller screens */
   }
 }
