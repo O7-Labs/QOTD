@@ -173,6 +173,22 @@ export default function QuizGame() {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000); // Toast disappears after 3 seconds
   };
+  const fetchQuestionOfTheDay = async () => {
+    const today = new Date().toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
+  
+    let { data: questionData, error } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('date', today)
+      .single();
+  
+    if (error) {
+      console.error('Error fetching question:', error);
+      return null;
+    }
+  
+    return questionData;
+  };
 
   if (!question) return <div>Loading...</div>
 
