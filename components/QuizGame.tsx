@@ -182,9 +182,10 @@ export default function QuizGame() {
   
     return (
       <>
-        <header className="quix-header">
-          <h1 className="quix-title">QUIX</h1>
-        </header>
+      <header className="quix-header">
+        <div className="header-top-border"></div> {/* This div represents the top border */}
+        <h1 className="quix-title">QUIX</h1>
+      </header>
         <div className="quix-container">
           <div className="question-header">
             Question of the day
