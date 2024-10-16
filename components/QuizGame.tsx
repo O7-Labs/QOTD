@@ -34,7 +34,7 @@ export default function QuizGame() {
   const [isQuestionExpanded, setIsQuestionExpanded] = useState(true);
 
   const answerInputRef = useRef<HTMLInputElement>(null);
-  const { client: supabase } = useContext(SupabaseContext);
+  const { client: supabase, isAuthenticated } = useContext(SupabaseContext);
 
   useEffect(() => {
     fetchQuestion();
@@ -283,7 +283,7 @@ export default function QuizGame() {
             )}
           </div>
         )}
-        {gameState === "finished" && (
+        {gameState === "finished" && isAuthenticated && (
           <div className="statistics-panel">
             <h3>Statistics</h3>
             <div className="stats-grid">
