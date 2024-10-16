@@ -1,19 +1,11 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { ChevronDown, Clock, Share2 } from "lucide-react";
 import Image from "next/image";
-console.log(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { SupabaseContext } from "@/providers/supabase";
 
 type Feedback = ("correct" | "wrong-position" | "incorrect")[];
 
@@ -42,6 +34,7 @@ export default function QuizGame() {
   const [isQuestionExpanded, setIsQuestionExpanded] = useState(true);
 
   const answerInputRef = useRef<HTMLInputElement>(null);
+  const { client: supabase } = useContext(SupabaseContext);
 
   useEffect(() => {
     fetchQuestion();
