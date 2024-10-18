@@ -39,7 +39,7 @@ export default function Home() {
       <header className="flex justify-between items-center justify-between w-full">
         <div className="quix-header text-center">
           <div className="header-top-border"></div>
-          <h1 className="quix-title">QUIX</h1>
+          <h1 className="quix-title">AEIOU</h1>
         </div>
         {isAuthenticated ? (
           <div className="authenticated-box">
