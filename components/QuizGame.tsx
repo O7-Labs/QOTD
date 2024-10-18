@@ -70,6 +70,12 @@ export default function QuizGame() {
     }
   };
 
+  useEffect(() => {
+    if (showExplanation && !isAuthenticated) {
+      alert("You need to be signed in to view the explanation");
+    }
+  }, [showExplanation]);
+
   const publishStats = async (score: number) => {
     await supabase.from("quiz_stats").insert([
       {
@@ -345,7 +351,7 @@ export default function QuizGame() {
             Submit
           </button>
 
-          {showExplanation && (
+          {showExplanation && isAuthenticated && (
             <div className="explanation">
               <h3>Answer Explanation:</h3>
               <p>{question?.explanation}</p>
