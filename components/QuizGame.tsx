@@ -9,12 +9,14 @@ import { SupabaseContext } from "@/providers/supabase";
 
 type Feedback = ("correct" | "wrong-position" | "incorrect")[];
 
+
 interface QuizQuestion {
   id: string;
   question: string;
   answer: string;
   explanation: string;
   image_url?: string;
+  question_id: number;
 }
 
 export default function QuizGame() {
@@ -170,7 +172,7 @@ export default function QuizGame() {
     const correctAttemptIndex =
       attempts.findIndex((attempt) => attempt === question?.answer) + 1;
 
-    return `QuizX #${question?.id}\n${
+    return `QuizX #${question?.question_id}\n${
       correctAttemptIndex > 0 ? `${correctAttemptIndex}/3` : `X/3`
     } Score: ${score}\n${feedbackEmojis}`;
   };
