@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "QOTD",
+  title: "AEIOU",
   description: "Quiz of the day app by o7",
 };
 
