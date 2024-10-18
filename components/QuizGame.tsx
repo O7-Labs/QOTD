@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext, use } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -8,7 +8,6 @@ import Image from "next/image";
 import { SupabaseContext } from "@/providers/supabase";
 
 type Feedback = ("correct" | "wrong-position" | "incorrect")[];
-
 
 interface QuizQuestion {
   id: string;
@@ -33,10 +32,14 @@ export default function QuizGame() {
     maxStreak: 0,
   });
   const [showExplanation, setShowExplanation] = useState(false);
-  const [isQuestionExpanded, setIsQuestionExpanded] = useState(true);
+  const [isQuestionExpanded, setIsQuestionExpanded] = useState(false);
 
   const answerInputRef = useRef<HTMLInputElement>(null);
-  const { client: supabase, isAuthenticated } = useContext(SupabaseContext);
+  const {
+    client: supabase,
+    isAuthenticated,
+    user,
+  } = useContext(SupabaseContext);
 
   useEffect(() => {
     fetchQuestion();
@@ -67,14 +70,79 @@ export default function QuizGame() {
     }
   };
 
+  const publishStats = async (score: number) => {
+    await supabase.from("quiz_stats").insert([
+      {
+        user_id: user?.id,
+        quiz_id: question?.id,
+        score: score,
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    const fetchRealStats = async () => {
+      if (gameState === "finished") {
+        await fetchStats();
+      }
+    };
+    fetchRealStats();
+  }, [gameState]);
+
+  const getStats = async () => {
+    if (!user?.id) return;
+    const { data, error } = await supabase
+      .from("quiz_stats")
+      .select("*")
+      .eq("user_id", user?.id)
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Error fetching stats:", error);
+    } else if (data) {
+      return data;
+    }
+  };
   const fetchStats = async () => {
     // Placeholder implementation
-    setStats({
-      played: 10,
-      winPercentage: 80,
-      currentStreak: 3,
-      maxStreak: 5,
-    });
+    const data = await getStats();
+    // manipulate data to get below stats
+    if (data && data.length > 0) {
+      const totalPlayed = data?.length;
+      const wins = data?.filter((stat) => stat.score > 0).length;
+      const winPercentage = (wins / totalPlayed) * 100;
+      // when the difference between prev and current created at is more than 24 hours, reset the streak
+      const streak = data.reduce(
+        (acc, stat, index) => {
+          if (index === 0) return acc;
+          const prevCreatedAt = new Date(data[index - 1].created_at);
+          const currentCreatedAt = new Date(stat.created_at);
+          const diff =
+            (currentCreatedAt.getTime() - prevCreatedAt.getTime()) / 1000;
+          if (diff > 24 * 60 * 60) {
+            return { ...acc, currentStreak: 1 };
+          }
+          return { ...acc, currentStreak: acc.currentStreak + 1 };
+        },
+        { currentStreak: 1, maxStreak: 1 }
+      );
+
+      const currentStreak = streak.currentStreak;
+      const maxStreak = streak.maxStreak;
+
+      setStats({
+        played: totalPlayed,
+        winPercentage: winPercentage,
+        currentStreak: currentStreak,
+        maxStreak: maxStreak,
+      });
+    } else {
+      setStats({
+        played: 0,
+        winPercentage: 0,
+        currentStreak: 0,
+        maxStreak: 0,
+      });
+    }
   };
   const handleCharacterChange = (index: number, value: string) => {
     const newAnswer = answer.split("");
@@ -111,14 +179,25 @@ export default function QuizGame() {
       }
     });
 
-    setAttempts([...attempts, submittedAnswer]);
-    setFeedback([...feedback, newFeedback]);
-
     if (submittedAnswer === question.answer || attempts.length === 2) {
-      setGameState("finished");
-      setShowExplanation(true);
+      const score = calculateScore([newFeedback], timeElapsed);
+      publishStats(score)
+        .then(() => {
+          setGameState("finished");
+          setShowExplanation(true);
+        })
+        .catch((error) => {
+          console.error("Error publishing stats:", error);
+        })
+        .finally(() => {
+          setTimeElapsed(0);
+        });
+
+      fetchStats();
     }
 
+    setAttempts([...attempts, submittedAnswer]);
+    setFeedback([...feedback, newFeedback]);
     setAnswer("");
   };
 
@@ -188,139 +267,139 @@ export default function QuizGame() {
   if (!question) return <div>Loading...</div>;
 
   return (
-    <>
-      <header className="quix-header">
-        <div className="header-top-border"></div>{" "}
-        {/* This div represents the top border */}
-        <h1 className="quix-title">QUIX</h1>
-      </header>
-      <div className="quix-container">
-        <div className="question-header">Question of the day</div>
-        <div className="question-content">
-          <p className={`${isQuestionExpanded ? "" : "line-clamp-2"}`}>
-            {question.question}
-          </p>
-          {question.question.length > 100 && (
-            <button
-              className="expand-button"
-              onClick={() => setIsQuestionExpanded(!isQuestionExpanded)}
-            >
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${
-                  isQuestionExpanded ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-          )}
-          {question.image_url && question.image_url !== "NULL" && (
-            <div className="question-image">
-              <Image
-                src={question.image_url}
-                alt="Question image"
-                width={500} // Set the original width of the image
-                height={300} // Set the original height of the image
-                layout="responsive"
-              />
-            </div>
-          )}
-        </div>
-        <div className="attempts-container">
-          {attempts.map((attempt, index) => (
-            <div key={index} className="attempt-row">
-              {attempt.split("").map((letter, letterIndex) => (
-                <div
-                  key={letterIndex}
-                  className={`attempt-block ${getFeedbackColor(
-                    feedback[index][letterIndex]
-                  )}`}
-                >
-                  {letter}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div className="answer-container">
-          {question.answer
-            .split("")
-            .map((char, index) =>
-              char === " " ? (
-                <div key={index} className="answer-space" />
-              ) : (
-                <input
-                  key={index}
-                  className="answer-input"
-                  maxLength={1}
-                  value={answer[index] || ""}
-                  onChange={(event) =>
-                    handleCharacterChange(index, event.target.value)
-                  }
-                  disabled={gameState !== "playing"}
+    <div className="quix-container">
+      <div className="w-full flex flex-row gap-10">
+        <div className="w-full flex flex-col">
+          <div className="question-header transform -translate-x-1/2 left-1/2 relative bottom-12 px-4 py-2 shadow-md w-1/4">
+            Question of the day
+          </div>
+          <div className="question-content">
+            <p className={`${isQuestionExpanded ? "" : "line-clamp-2"}`}>
+              {question.question}
+            </p>
+            {question.question.length > 100 && (
+              <button
+                className="expand-button"
+                onClick={() => setIsQuestionExpanded(!isQuestionExpanded)}
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    isQuestionExpanded ? "rotate-180" : ""
+                  }`}
                 />
-              )
+              </button>
             )}
-        </div>
-        <button
-          className="submit-button"
-          onClick={() => handleSubmit(answer)}
-          disabled={gameState !== "playing"}
-        >
-          Submit
-        </button>
-
-        {showExplanation && (
-          <div className="explanation">
-            <h3>Answer Explanation:</h3>
-            <p>{question?.explanation}</p>
-            {question?.image_url && question.image_url !== "NULL" && (
-              <div className="explanation-image">
+            {question.image_url && question.image_url !== "NULL" && (
+              <div className="question-image">
                 <Image
                   src={question.image_url}
-                  alt="Explanation image"
-                  width={500} // Set the original width of the image
-                  height={300} // Set the original height of the image
+                  alt="Question image"
+                  width={0} // Set the original width of the image
+                  height={0} // Set the original height of the image
                   layout="responsive"
                 />
               </div>
             )}
           </div>
-        )}
-        {gameState === "finished" && isAuthenticated && (
-          <div className="statistics-panel">
-            <h3>Statistics</h3>
-            <div className="stats-grid">
-              <div className="stat">
-                <div className="stat-value">{stats.played}</div>
-                <div className="stat-label">Played</div>
+          <div className="attempts-container">
+            {attempts.map((attempt, index) => (
+              <div key={index} className="attempt-row">
+                {attempt.split("").map((letter, letterIndex) => (
+                  <div
+                    key={letterIndex}
+                    className={`attempt-block ${getFeedbackColor(
+                      feedback[index][letterIndex]
+                    )}`}
+                  >
+                    {letter}
+                  </div>
+                ))}
               </div>
-              <div className="stat">
-                <div className="stat-value">{stats.winPercentage}%</div>
-                <div className="stat-label">Win %</div>
-              </div>
-              <div className="stat">
-                <div className="stat-value">{stats.currentStreak}</div>
-                <div className="stat-label">Current Streak</div>
-              </div>
-              <div className="stat">
-                <div className="stat-value">{stats.maxStreak}</div>
-                <div className="stat-label">Max Streak</div>
-              </div>
+            ))}
+          </div>
+          <div className="answer-container">
+            {question.answer
+              .split("")
+              .map((char, index) =>
+                char === " " ? (
+                  <div key={index} className="answer-space" />
+                ) : (
+                  <input
+                    key={index}
+                    className="answer-input"
+                    maxLength={1}
+                    value={answer[index] || ""}
+                    onChange={(event) =>
+                      handleCharacterChange(index, event.target.value)
+                    }
+                    disabled={gameState !== "playing"}
+                  />
+                )
+              )}
+          </div>
+          <button
+            className="submit-button"
+            onClick={() => handleSubmit(answer)}
+            disabled={gameState !== "playing"}
+          >
+            Submit
+          </button>
+
+          {showExplanation && (
+            <div className="explanation">
+              <h3>Answer Explanation:</h3>
+              <p>{question?.explanation}</p>
+              {question?.image_url && question.image_url !== "NULL" && (
+                <div className="explanation-image">
+                  <Image
+                    src={question.image_url}
+                    alt="Explanation image"
+                    width={500} // Set the original width of the image
+                    height={300} // Set the original height of the image
+                    layout="responsive"
+                  />
+                </div>
+              )}
             </div>
-            <button className="copy-button" onClick={handleCopy}>
-              Copy
-            </button>
-            <button className="explore-button">Explore previous QOTD</button>
+          )}
+        </div>
+        {gameState === "finished" && isAuthenticated && (
+          <div className="w-1/2">
+            <div className="statistics-panel">
+              <h3>Statistics</h3>
+              <div className="stats-grid">
+                <div className="stat">
+                  <div className="stat-value">{stats.played}</div>
+                  <div className="stat-label">Played</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-value">{stats.winPercentage}%</div>
+                  <div className="stat-label">Win %</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-value">{stats.currentStreak}</div>
+                  <div className="stat-label">Current Streak</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-value">{stats.maxStreak}</div>
+                  <div className="stat-label">Max Streak</div>
+                </div>
+              </div>
+              <button className="copy-button" onClick={handleCopy}>
+                Copy
+              </button>
+              <button className="explore-button">Explore previous QOTD</button>
+            </div>
           </div>
         )}
-        {showToast && <div className="toast">Copied to clipboard</div>}
-        <div className="footer">
-          <div className="timer">
-            <Clock className="w-4 h-4" />
-            <span>{formatTime(timeElapsed)}</span>
-          </div>
-          <span className="credits">Made with ❤️ o7 labs</span>
+      </div>
+      {showToast && <div className="toast">Copied to clipboard</div>}
+      <div className="footer">
+        <div className="timer">
+          <Clock className="w-4 h-4" />
+          <span>{formatTime(timeElapsed)}</span>
         </div>
       </div>
-    </>
+    </div>
   );
 }

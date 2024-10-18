@@ -31,15 +31,6 @@
   background-color: black; /* Color of the top border */
 }
 
-.quix-container {
-  margin: 20px auto; /* Center the container and give some margin from the header */
-  padding: 20px;
-  background-color: #fff; /* White background for the quiz area */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Shadow for the container */
-  width: 80%; /* Adjust width as necessary */
-  max-width: 800px; /* Maximum width */
-}
-
 .footer {
   background-color: #f8f9fa; /* Consistent with the header */
   padding: 10px 20px; /* Padding */
@@ -57,30 +48,29 @@ body {
 }
 
 .quix-container {
-  max-width: 800px;
   margin: 0 auto;
   padding: 20px;
   background-color: var(--background-color);
   border: var(--pixel-border);
   border-radius: 10px;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */;
+  width: 70%;
 }
 
 .quix-title {
   text-align: center;
   font-size: 36px;
-  margin-bottom: 20px;
   text-transform: uppercase;
 }
 
 .question-header {
   background-color: var(--header-bg);
   padding: 10px;
-  margin-bottom: 20px;
   border: var(--pixel-border);
-  border-radius: 5px;
+  border-radius: 22px;
   font-size: 14px;
   text-align: center;
+  box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */;
 }
 
 .question-content {
@@ -129,6 +119,36 @@ body {
   cursor: pointer;
   font-family: 'Press Start 2P', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
+
+.authenticated-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  font-size: 18px;
+  background-color: var(--background);
+  color: #000000;
+  border: var(--pixel-border);
+  border-radius: 5px;
+  box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */
+  font-family: 'Press Start 2P', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.signin-button {
+  display: block;
+  width: 200px;
+  padding: 10px;
+  font-size: 18px;
+  background-color: var(--header-bg);
+  color: #000000;
+  border: var(--pixel-border);
+  border-radius: 5px;
+  box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */
+  cursor: pointer;
+  font-family: 'Press Start 2P', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
 
 .footer {
   display: flex;
@@ -185,7 +205,10 @@ body {
 }
 
 .expand-button {
-  display: block;
+  /* display: block; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 10px auto 0;
   background: none;
   border: none;
@@ -195,7 +218,7 @@ body {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
@@ -314,21 +337,22 @@ body {
 }
 
 .question-image {
-  max-width: 100%;  
-  height: auto;    
-  margin: 0 auto;   
-  padding: 10px;    
-  box-sizing: border-box; 
+  height: auto;
+  margin: 0 auto;
+  padding: 10px;
+  box-sizing: border-box;
+  width: 50%;
+  height: 50%;
 }
 @media (max-width: 768px) {
   .question-image {
-    padding: 5px;  
+    padding: 5px;
   }
 }
 
 @media (max-width: 480px) {
   .question-image {
-    padding: 2px;  
+    padding: 2px;
   }
 }
 @media (max-width: 768px) {
