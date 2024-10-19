@@ -38,7 +38,6 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-6 gap-10">
       <header className="flex justify-between items-center justify-between w-full">
         <div className="quix-header text-center">
-          <div className="header-top-border"></div>
           <h1 className="quix-title">AEIOU</h1>
         </div>
         {isAuthenticated ? (

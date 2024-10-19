@@ -1,7 +1,11 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('../app/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
 
 :root {
   --background: #ffffff;
@@ -40,10 +44,11 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: "Press Start 2P", system-ui;
+  font-family: "Helvetica", system-ui;
   line-height: 1.6;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow *//* Added shadow */
   margin: 0;
+  background-color: #f9f09e;
 
 }
 
@@ -54,13 +59,22 @@ body {
   border: var(--pixel-border);
   border-radius: 10px;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */;
-  width: 70%;
+  width: 80%; /* Adjust the width as needed */
+  max-width: 1200px; /* Maximum width */
+  margin: 0 auto; /* Center the container */
+  overflow: scroll; /* Enable horizontal scrolling */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: Adds shadow for better visibility */
+  margin: 20px auto; /* Center the container and add some vertical margin */
+  max-height: 600px; /* Maximum height */
+  overflow-y: auto;
 }
 
 .quix-title {
   text-align: center;
   font-size: 36px;
   text-transform: uppercase;
+  font-family: "Press Start 2P", system-ui;
+  color: #bb4861;
 }
 
 .question-header {
@@ -71,6 +85,8 @@ body {
   font-size: 14px;
   text-align: center;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */;
+
+
 }
 
 .question-content {
@@ -90,6 +106,7 @@ body {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  font-family: "Press Start 2P", system-ui;
 }
 
 .answer-input {
@@ -132,7 +149,6 @@ body {
   border: var(--pixel-border);
   border-radius: 5px;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */
-  font-family: "Press Start 2P", system-ui;
 }
 
 .signin-button {
@@ -146,7 +162,6 @@ body {
   border-radius: 5px;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */
   cursor: pointer;
-  font-family: "Press Start 2P", system-ui;
 }
 
 
@@ -161,6 +176,7 @@ body {
 .timer {
   display: flex;
   align-items: center;
+  background-color: #f0f0f0;
 }
 
 .attempts-container {
@@ -169,6 +185,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-family: "Press Start 2P", system-ui;
 }
 
 .attempt-row {

@@ -45,7 +45,7 @@ export default function QuizGame() {
     fetchQuestion();
     fetchStats();
   }, []);
-
+  const [finalTime, setFinalTime] = useState(0);
   useEffect(() => {
     if (gameState === "playing") {
       const timer = setInterval(() => {
@@ -54,6 +54,10 @@ export default function QuizGame() {
       return () => clearInterval(timer);
     }
   }, [gameState]);
+
+
+
+
 
   const fetchQuestion = async () => {
     const { data, error } = await supabase
@@ -190,6 +194,7 @@ export default function QuizGame() {
       publishStats(score)
         .then(() => {
           setGameState("finished");
+          setFinalTime(timeElapsed);
           setShowExplanation(true);
         })
         .catch((error) => {
@@ -276,9 +281,9 @@ export default function QuizGame() {
     <div className="quix-container">
       <div className="w-full flex flex-row gap-10">
         <div className="w-full flex flex-col">
-          <div className="question-header transform -translate-x-1/2 left-1/2 relative bottom-12 px-4 py-2 shadow-md w-1/4">
-            Question of the day
-          </div>
+        <div className="question-header" style={{ zIndex: 100, transform: 'translateX(-50%)', left: '50%', position: 'relative', bottom: '12px', padding: '4px 2px', width: '25%', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+  Question of the day
+</div>
           <div className="question-content">
             <p className={`${isQuestionExpanded ? "" : "line-clamp-2"}`}>
               {question.question}
@@ -391,6 +396,10 @@ export default function QuizGame() {
                   <div className="stat-label">Max Streak</div>
                 </div>
               </div>
+              <div className="stat">
+        <div className="stat-value">{formatTime(gameState === "finished" ? finalTime : timeElapsed)}</div>
+        <div className="stat-label">Time Taken</div>
+      </div>
               <button className="copy-button" onClick={handleCopy}>
                 Copy
               </button>
@@ -401,10 +410,10 @@ export default function QuizGame() {
       </div>
       {showToast && <div className="toast">Copied to clipboard</div>}
       <div className="footer">
-        <div className="timer">
-          <Clock className="w-4 h-4" />
-          <span>{formatTime(timeElapsed)}</span>
-        </div>
+      <div className="timer">
+  <Clock className="w-4 h-4" />
+  <span>{formatTime(gameState === "finished" ? finalTime : timeElapsed)}</span>
+</div>
       </div>
     </div>
   );
