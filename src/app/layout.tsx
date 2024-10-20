@@ -15,7 +15,7 @@ const PressStart2P = localFont({
 // });
 
 export const metadata: Metadata = {
-  title: "AEIOU",
+  title: "AEIOU - Quiz Game",
   description: "Quiz of the day app by o7",
 };
 
@@ -26,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+            <head>
+        <link rel="icon" href="favicon.ico" />
+      </head>
       <body
         className={`${PressStart2P.variable} antialiased`}
       >

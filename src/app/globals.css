@@ -1,11 +1,16 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 @font-face {
   font-family: 'Press Start 2P';
   src: url('../app/fonts/PressStart2P-Regular.ttf') format('truetype');
 }
+@font-face {
+  font-family: 'Lato';
+  src: url('../app/fonts/Lato-Regular.ttf') format('truetype');
+}
+
 
 :root {
   --background: #ffffff;
@@ -13,7 +18,7 @@
   --pixel-border: 2px solid #000000;
   --background-color: #ffffff;
   --question-bg: #fefcbf;
-  --header-bg: #90cdf4;
+  --header-bg: #FD8B51;
   --button-bg: #48bb78;
 }
 
@@ -44,11 +49,11 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: "Helvetica", system-ui;
+  font-family:  "Lato", Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   line-height: 1.6;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow *//* Added shadow */
   margin: 0;
-  background-color: #f9f09e;
+  background-color: #F2E5BF;
 
 }
 
@@ -74,7 +79,8 @@ body {
   font-size: 36px;
   text-transform: uppercase;
   font-family: "Press Start 2P", system-ui;
-  color: #bb4861;
+  color: #257180;
+  background-color: #F2E5BF;
 }
 
 .question-header {
@@ -90,7 +96,8 @@ body {
 }
 
 .question-content {
-  background-color: var(--question-bg);
+  background-color: 
+  #F2E5BF;
   padding: 20px;
   margin-bottom: 20px;
   border: var(--pixel-border);
@@ -144,7 +151,7 @@ body {
   gap: 10px;
   padding: 10px;
   font-size: 18px;
-  background-color: var(--background);
+  background-color: var(--header-bg);
   color: #000000;
   border: var(--pixel-border);
   border-radius: 5px;
@@ -243,7 +250,8 @@ body {
   margin-top: 20px;
   padding: 10px;
   border: var(--pixel-border);
-  background-color: #f0f0f0;
+  background-color: 
+  #F2E5BF;
   box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Solid black shadow */
   border-radius: 5px;
 }
@@ -281,6 +289,13 @@ body {
   margin-top: 2rem;
 }
 
+.statistics-panel h3 {
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  justify-content: center;
+  align-items: center;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* Two columns of equal width */
@@ -313,16 +328,21 @@ body {
 .copy-button, .explore-button {
   background-color: #5fa3df; /* Green background for buttons */
   color: #ffffff; /* White text */
-  border: none;
+  border: black;
   border-radius: 5px;
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
-  margin-top: 10px; /* Space between buttons if needed */
+  margin-top: 10px;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px rgb(0, 0, 0);
+   /* Space between buttons if needed */
 }
 
 .copy-button:hover, .explore-button:hover {
-  background-color: #38a169; /* Slightly darker green on hover */
+  background-color: #38a169;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px rgb(0, 0, 0); /* Slightly darker green on hover */
 }
 
 /* quiz-game/src/app/globals.css */
@@ -388,4 +408,25 @@ body {
     padding: 15px;
     font-size: 18px; /* Smaller font size for smaller screens */
   }
+}
+.shareable-result {
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  
+  border: 2px solid #000000;
+}
+
+.shareable-result h4 {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.result-text {
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }

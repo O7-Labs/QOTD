@@ -333,6 +333,7 @@ export default function QuizGame() {
                                 <div>Max Streak</div>
                             </div>
                         </div>
+                        
                         <Button
                             variant="outline"
                             size="sm"

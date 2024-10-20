@@ -166,30 +166,32 @@ export default function QuizGame() {
 
   const handleSubmit = (submittedAnswer: string) => {
     if (!question) return;
-
-    const newFeedback: Feedback = Array(submittedAnswer.length).fill(
-      "incorrect"
-    );
-    let remainingCorrect = question.answer.split("");
-
-    submittedAnswer.split("").forEach((letter, index) => {
-      if (letter === question.answer[index]) {
-        newFeedback[index] = "correct";
-        remainingCorrect[index] = "";
+  
+    // Ensure the submitted answer matches the length of the correct answer
+    // Pad the submitted answer with spaces if it's shorter
+    while (submittedAnswer.length < question.answer.length) {
+      submittedAnswer += " ";
+    }
+  
+    // Generate feedback for each character
+    const newFeedback: Feedback = submittedAnswer.split("").map((char, index) => {
+      if (char === " " && question.answer[index] === " ") {
+        return "correct"; // Correct space at the correct position
+      } else if (char === question.answer[index]) {
+        return "correct"; // Correct character at the correct position
+      } else if (question.answer.includes(char)) {
+        return "wrong-position"; // Correct character but at the wrong position
+      } else {
+        return "incorrect"; // Incorrect character
       }
     });
-
-    submittedAnswer.split("").forEach((letter, index) => {
-      if (newFeedback[index] !== "correct") {
-        const correctIndex = remainingCorrect.indexOf(letter);
-        if (correctIndex !== -1) {
-          newFeedback[index] = "wrong-position";
-          remainingCorrect[correctIndex] = "";
-        }
-      }
-    });
-
-    if (submittedAnswer === question.answer || attempts.length === 2) {
+  
+    // Add the attempt and feedback to their respective arrays
+    setAttempts([...attempts, submittedAnswer]);
+    setFeedback([...feedback, newFeedback]);
+  
+    // Check if the game should end
+    if (submittedAnswer.trim() === question.answer || attempts.length === 2) {
       const score = calculateScore([newFeedback], timeElapsed);
       publishStats(score)
         .then(() => {
@@ -203,13 +205,11 @@ export default function QuizGame() {
         .finally(() => {
           setTimeElapsed(0);
         });
-
+  
       fetchStats();
     }
-
-    setAttempts([...attempts, submittedAnswer]);
-    setFeedback([...feedback, newFeedback]);
-    setAnswer("");
+  
+    setAnswer(""); // Clear current answer for the next input
   };
 
   const formatTime = (seconds: number) => {
@@ -262,7 +262,7 @@ export default function QuizGame() {
     const correctAttemptIndex =
       attempts.findIndex((attempt) => attempt === question?.answer) + 1;
 
-    return `QuizX #${question?.question_id}\n${
+    return `AEIOU #${question?.question_id}\n${
       correctAttemptIndex > 0 ? `${correctAttemptIndex}/3` : `X/3`
     } Score: ${score}\n${feedbackEmojis}`;
   };
@@ -313,21 +313,20 @@ export default function QuizGame() {
             )}
           </div>
           <div className="attempts-container">
-            {attempts.map((attempt, index) => (
-              <div key={index} className="attempt-row">
-                {attempt.split("").map((letter, letterIndex) => (
-                  <div
-                    key={letterIndex}
-                    className={`attempt-block ${getFeedbackColor(
-                      feedback[index][letterIndex]
-                    )}`}
-                  >
-                    {letter}
-                  </div>
-                ))}
-              </div>
-            ))}
+  {attempts.map((attempt, index) => (
+    <div key={index} className="attempt-row">
+      {attempt.split("").map((char, charIndex) => (
+        char === " " ? (
+          <div key={charIndex} className="attempt-space" /> // Render space
+        ) : (
+          <div key={charIndex} className={`attempt-block ${getFeedbackColor(feedback[index][charIndex])}`}>
+            {char}
           </div>
+        )
+      ))}
+    </div>
+  ))}
+</div>
           <div className="answer-container">
             {question.answer
               .split("")
@@ -377,7 +376,7 @@ export default function QuizGame() {
         {gameState === "finished" && isAuthenticated && (
           <div className="w-1/2">
             <div className="statistics-panel">
-              <h3>Statistics</h3>
+            <h3 className="text-center text-2xl font-bold mb-4">Statistics</h3>
               <div className="stats-grid">
                 <div className="stat">
                   <div className="stat-value">{stats.played}</div>
@@ -400,10 +399,15 @@ export default function QuizGame() {
         <div className="stat-value">{formatTime(gameState === "finished" ? finalTime : timeElapsed)}</div>
         <div className="stat-label">Time Taken</div>
       </div>
+      <div className="shareable-result">
+                <h4>Result:</h4>
+                <pre className="result-text">{getShareableResult()}</pre>
+              </div>
+      
               <button className="copy-button" onClick={handleCopy}>
                 Copy
               </button>
-              <button className="explore-button">Explore previous QOTD</button>
+              {/* <button className="explore-button">Explore previous QOTD</button> */}
             </div>
           </div>
         )}
